@@ -14,18 +14,9 @@ public class One_Driver extends Person {
     }
 
 
-   // public String getCarTag() {
-     //   return carTag;
-   // }
-
-   // public void setCarTag(String carTag) {
-      //  this.carTag = carTag;
-   // }
-
-
     @Override
     public String toString() {
-        return "One_Driver{" +
+        return "Driver{" +
                 super.toString()+
                 "}";
     }

@@ -115,7 +115,8 @@ public class Auto {
 
     private void passengerSignUpOrLogIn() {
         try {
-            String username = getNumber("enter your user name (national code)","[0-9]*")+"";
+            System.out.println("enter your user name (national code)");
+            String username = new Scanner(System.in).next();
             if (passengerDataBase.findPassenger(username)) {
                 System.out.println("you are logged in");
             } else {
@@ -127,12 +128,16 @@ public class Auto {
     }
 
     private void driverSignUpOrLogIn() {
+        Scanner scanner = new Scanner(System.in);
         try {
-            String username = getNumber("enter your user name (national code)","[0-9]*")+"";
+            System.out.println("enter your user name (national code)");
+            String username = scanner.next();
             if (driverDataBase.findDriver(username)) {
                 System.out.println("you are logged in");
             } else {
-                registerDriver(username);
+                int item = getNumber("1.register\n2)exit","[12]*");
+                if (item == 1 )
+                    registerDriver(username);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -167,7 +172,8 @@ public class Auto {
             try {
                 if (!passengerDataBase.findPassenger(nationalCode))
                     passengerDataBase.savePassenger(new Pasenger(firstName,lastName,nationalCode,gender,date,phoneNumber,balance, Traver_Status.not_start));
-                System.out.println("there is driver with this national code ");
+                else
+                    System.out.println("there is driver with this national code ");
             } catch (SQLException e) {
                 e.printStackTrace();
                 System.out.println(e.toString());
@@ -295,7 +301,7 @@ public class Auto {
 
         }while(!isNumberOk);
 
-        return Integer.parseInt(number);
+        return Integer.parseInt(number.trim());
     }
 
     private double getNumber_double(String message,String regex) {

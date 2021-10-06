@@ -21,7 +21,7 @@ public class DriverDataBase extends DataBaseAccess{
         if (getConnection() != null) {
             Statement statement = getConnection().createStatement();
             String sqlQuery = "INSERT INTO driver ( first_name,last_name  , national_code , driver_gender ,driver_birthdate  ,phone_number  ,driver_balance  ) " +
-                            "VALUES ('%s','%s','%s','%s',%s,'%s','%s')";
+                            "VALUES ('%s','%s','%s','%s','%s','%s','%s')";
 
             String date  = new SimpleDateFormat("yyyy-MM-dd").format(driver.getBirthDate());
 
@@ -47,11 +47,11 @@ public class DriverDataBase extends DataBaseAccess{
                 int id = resultSet.getInt(resultSet.findColumn("driver_id"));
                 String firstName    = resultSet.getString(resultSet.findColumn("first_name"));
                 String lastName     = resultSet.getString(resultSet.findColumn("last_name"));
-                String nationalCode = resultSet.getInt(resultSet.findColumn("national_code"))+"";
+                String nationalCode = resultSet.getString(resultSet.findColumn("national_code"))+"";
                 Gender gender       = resultSet.getString(resultSet.findColumn("driver_gender")).equals(Gender.male.toString()) ? Gender.male:Gender.female;
                 String date         = resultSet.getString(resultSet.findColumn("driver_birthdate"));
                 Date birthDate      = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-                String phoneNumber  = resultSet.getInt(resultSet.findColumn("phone_number"))+"";
+                String phoneNumber  = resultSet.getString(resultSet.findColumn("phone_number"))+"";
                 double balance      = resultSet.getDouble(resultSet.findColumn("driver_balance"));
 
                 drivers.add(new One_Driver(id,firstName,lastName,nationalCode,gender,birthDate,phoneNumber,balance));
@@ -71,9 +71,9 @@ public class DriverDataBase extends DataBaseAccess{
     public boolean findDriver(String nationalCode ) throws SQLException {
         if (getConnection() != null) {
             Statement statement = getConnection().createStatement();
-            String sqlQuery= String.format("SELECT national_code from driver WHERE national_code='%s'",nationalCode);
+            String sqlQuery= "SELECT national_code from taxi_online.driver WHERE national_code="+nationalCode.trim();
             ResultSet resultSet=statement.executeQuery(sqlQuery);
-            if(resultSet.getRow() != 0){
+            if(resultSet.next()){
                 return  true;
             }else {
                 return false;

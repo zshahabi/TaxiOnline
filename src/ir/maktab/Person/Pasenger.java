@@ -7,9 +7,15 @@ import java.util.Date;
 
 public class Pasenger extends Person{
     private Traver_Status travelStatus;
-        public Pasenger(String firstName, String lastName, String nationalCode, Gender gender, Date birthDate, String phoneNumber, double balance,Traver_Status travelStatus) {
+
+    public Pasenger(String firstName, String lastName, String nationalCode, Gender gender, Date birthDate, String phoneNumber, double balance, Traver_Status travelStatus) {
         super(firstName, lastName, nationalCode, gender, birthDate, phoneNumber, balance);
-        this.travelStatus= travelStatus;
+        this.travelStatus = travelStatus;
+    }
+
+    public Pasenger(int id,String firstName, String lastName, String nationalCode, Gender gender, Date birthDate, String phoneNumber, double balance, Traver_Status travelStatus) {
+        super(id,firstName, lastName, nationalCode, gender, birthDate, phoneNumber, balance);
+        this.travelStatus = travelStatus;
     }
 
     public Traver_Status getTravelStatus() {
