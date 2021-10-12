@@ -8,8 +8,7 @@ public class DataBaseAccess {
 
     public DataBaseAccess() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-//        connection= DriverManager.getConnection("jdbc:mysql://localhost:3306/taxi_online", "root", "zo60na84");
-        connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/taxi_online","root","toor");
+        connection= DriverManager.getConnection("jdbc:mysql://localhost:3306/taxi_online", "root", "zo60na84");
 
 
     }

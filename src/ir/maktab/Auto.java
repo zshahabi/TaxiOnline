@@ -4,8 +4,10 @@ import ir.maktab.Person.One_Driver;
 import ir.maktab.Person.Pasenger;
 import ir.maktab.database.DriverDataBase;
 import ir.maktab.database.PassengerDataBase;
-import ir.maktab.enums.Gender;
-import ir.maktab.enums.Traver_Status;
+import ir.maktab.database.TripDatabase;
+import ir.maktab.enums.*;
+import ir.maktab.move.Locations;
+import ir.maktab.move.Trip;
 
 
 import java.sql.SQLException;
@@ -15,8 +17,9 @@ import java.util.*;
 
 public class Auto {
     //  DriverDataBase driverDataBase = new DriverDataBase();
-    PassengerDataBase passengerDataBase ;
-    DriverDataBase    driverDataBase    ;
+    PassengerDataBase passengerDataBase;
+    DriverDataBase driverDataBase;
+    TripDatabase tripDatabase;
 
 
     //showing main menu after app run : called in MainClass (just this method call in main and there is not any method in main )
@@ -39,7 +42,8 @@ public class Auto {
 
     public Auto() throws SQLException, ClassNotFoundException {
         passengerDataBase = new PassengerDataBase();
-        driverDataBase    = new DriverDataBase();
+        driverDataBase = new DriverDataBase();
+        tripDatabase = new TripDatabase();
     }
 
     private boolean selectMenuItem() {
@@ -91,11 +95,10 @@ public class Auto {
     }
 
 
-
     private void showListOfPassengers() {
         List<Pasenger> pasengers = passengerDataBase.showListPassengers();
 
-        for (Pasenger pasenger:pasengers) {
+        for (Pasenger pasenger : pasengers) {
             System.out.println(pasenger.toString());
         }
     }
@@ -103,7 +106,7 @@ public class Auto {
     private void showListOfDrivers() {
         List<One_Driver> drivers = driverDataBase.showListDrivers();
 
-        for (One_Driver driver:drivers) {
+        for (One_Driver driver : drivers) {
             System.out.println(driver.toString());
         }
 
@@ -114,11 +117,62 @@ public class Auto {
     }
 
     private void passengerSignUpOrLogIn() {
+        Scanner input = new Scanner(System.in);
         try {
             System.out.println("enter your user name (national code)");
-            String username = new Scanner(System.in).next();
+            String username = input.next();
             if (passengerDataBase.findPassenger(username)) {
                 System.out.println("you are logged in");
+                if (passengerDataBase.getTravelStatusForPassenger(username).equals(PassengerStatus.NOTATTEND)) {
+                    Pasenger passengerInfo = passengerDataBase.getPassengerInfo(username);
+                    System.out.println(passengerInfo.toString());
+                    String message = "enter 1.Travel request (pay by cash)\n" +
+                            "2.Travel request (pay by account balance)\n" +
+                            "3.Increase account balance\n" +
+                            "4.Exit";
+                    System.out.println(message);
+                    String choiceRequest = input.next();
+                    System.out.println(choiceRequest);
+                    Locations locations = null;
+                    switch (Integer.parseInt(choiceRequest.trim())) {
+                        case 1:
+                            System.out.println("Enter the origin and destination of your travel:");
+                            System.out.println("enter your location:latitudeOrigin(x1):");
+                            int x1 = input.nextInt();
+                            System.out.println("enter your location:longitudeOrigin(y1):");
+                            int y1 = input.nextInt();
+                            System.out.println("enter your location:latitudeDestination(x2):");
+                            int x2 = input.nextInt();
+                            System.out.println("enter your location:longitudeDestination(y2):");
+                            int y2 = input.nextInt();
+                            locations = new Locations(x1, y1, x2, y2);
+                            One_Driver driver = tripDatabase.getNearDriver(locations.getLatitudeOrigin(),
+                                    locations.getLongitudeOrigin());
+                            System.out.println("driver Info:" + driver.toString());
+                            Trip trip = new Trip(locations, PaymentStatus.CASH, Traver_Status.DOING, passengerDataBase.getPassengerId(username),
+                                    driverDataBase.getDriverId(driver.getNationalCode()));
+                            tripDatabase.addTrip(trip);
+                            passengerDataBase.changePassengerStatus(PassengerStatus.ATTEND, username);
+                            driverDataBase.changeDriverStatus(DriverStatus.DOING,driver.getNationalCode());
+
+                        case 2:
+                            System.out.println("Enter the origin and destination of your travel:");
+                            System.out.println("enter your location:latitudeOrigin(x1):");
+                            int x11 = input.nextInt();
+                            System.out.println("enter your location:longitudeOrigin(y1):");
+                            int y11 = input.nextInt();
+                            System.out.println("enter your location:latitudeDestination(x2):");
+                            int x22 = input.nextInt();
+                            System.out.println("enter your location:longitudeDestination(y2):");
+                            int y22 = input.nextInt();
+                            locations = new Locations(x11, y11, x22, y22);
+                            //todo
+                            if (passengerInfo.getBalance() < locations.priceOfTrip()) {
+
+                            }
+                    }
+                }
+
             } else {
                 registerPassenger(username);
             }
@@ -135,8 +189,8 @@ public class Auto {
             if (driverDataBase.findDriver(username)) {
                 System.out.println("you are logged in");
             } else {
-                int item = getNumber("1.register\n2)exit","[12]*");
-                if (item == 1 )
+                int item = getNumber("1.register\n2)exit", "[12]*");
+                if (item == 1)
                     registerDriver(username);
             }
         } catch (SQLException e) {
@@ -147,9 +201,9 @@ public class Auto {
     private boolean addPassengers() throws ParseException {
         Scanner scanner = new Scanner(System.in);
 
-        int numberOfPassengers = getNumber("enter number of passenger to add : ","[0-9]*");
-        for (int i = 0; i <numberOfPassengers ; i++) {
-            System.out.println("Enter passenger information passenger "+(i+1)+": (username, name, family, national code, ...)");
+        int numberOfPassengers = getNumber("enter number of passenger to add : ", "[0-9]*");
+        for (int i = 0; i < numberOfPassengers; i++) {
+            System.out.println("Enter passenger information passenger " + (i + 1) + ": (username, name, family, national code, ...)");
 
             System.out.println("enter your first name ");
             String firstName = scanner.next();
@@ -167,11 +221,11 @@ public class Auto {
 
             String phoneNumber = getPhoneNumber();
 
-            double balance = getNumber_double("enter your balance","[0-9.]*");
+            double balance = getNumber_double("enter your balance", "[0-9.]*");
 
             try {
                 if (!passengerDataBase.findPassenger(nationalCode))
-                    passengerDataBase.savePassenger(new Pasenger(firstName,lastName,nationalCode,gender,date,phoneNumber,balance, Traver_Status.not_start));
+                    passengerDataBase.savePassenger(new Pasenger(firstName, lastName, nationalCode, gender, date, phoneNumber, balance, PassengerStatus.NOTATTEND));
                 else
                     System.out.println("there is driver with this national code ");
             } catch (SQLException e) {
@@ -206,7 +260,7 @@ public class Auto {
         String phoneNumber = input.next();
         System.out.println("balance");
         double balance = input.nextDouble();
-        Pasenger passenger = new Pasenger(firstName, lastName, nationalCode, gender, birthDate, phoneNumber, balance,Traver_Status.not_start);
+        Pasenger passenger = new Pasenger(firstName, lastName, nationalCode, gender, birthDate, phoneNumber, balance, PassengerStatus.NOTATTEND);
 
         return passengerDataBase.savePassenger(passenger);
     }
@@ -231,7 +285,12 @@ public class Auto {
         String phoneNumber = input.next();
         System.out.println("balance");
         double balance = input.nextDouble();
-        One_Driver driver = new One_Driver(firstName, lastName, nationalCode, gender, birthDate, phoneNumber, balance);
+        System.out.println("latitude:");
+        int latitude = input.nextInt();
+        System.out.println("longitude:");
+        int longitude = input.nextInt();
+        One_Driver driver = new One_Driver(firstName, lastName, nationalCode, gender,
+                birthDate, phoneNumber, balance, DriverStatus.WAITING, latitude, longitude);
 
         return driverDataBase.save(driver);
     }
@@ -239,10 +298,10 @@ public class Auto {
     private boolean addDrivers() throws ParseException {
         Scanner scanner = new Scanner(System.in);
 
-        int numberOfDrivers = getNumber("Enter number of drivers: ","[0-9]*");
+        int numberOfDrivers = getNumber("Enter number of drivers: ", "[0-9]*");
 
-        for (int i = 0; i <numberOfDrivers ; i++) {
-            System.out.println("Enter drivers information driver "+(i+1)+": (username, name, family, national code, ...)");
+        for (int i = 0; i < numberOfDrivers; i++) {
+            System.out.println("Enter drivers information driver " + (i + 1) + ": (username, name, family, national code, ...)");
 
             System.out.println("enter your first name ");
             String firstName = scanner.next();
@@ -260,11 +319,16 @@ public class Auto {
 
             String phoneNumber = getPhoneNumber();
 
-            double balance = getNumber_double("enter your balance","[0-9.]*");
+            double balance = getNumber_double("enter your balance", "[0-9.]*");
+            System.out.println("latitude:");
+            int latitude = scanner.nextInt();
+            System.out.println("longitude:");
+            int longitude = scanner.nextInt();
 
             try {
                 if (!driverDataBase.findDriver(nationalCode))
-                    driverDataBase.save(new One_Driver(firstName,lastName,nationalCode,gender,date,phoneNumber,balance));
+                    driverDataBase.save(new One_Driver(firstName, lastName, nationalCode, gender, date, phoneNumber,
+                            balance, DriverStatus.WAITING, latitude, longitude));
                 else
                     System.out.println("there is driver with this national code ");
             } catch (SQLException e) {
@@ -279,13 +343,9 @@ public class Auto {
     }
 
 
-
-
-
-
-    private int getNumber(String message,String regex) {
+    private int getNumber(String message, String regex) {
         Scanner scanner = new Scanner(System.in);
-        boolean isNumberOk ;
+        boolean isNumberOk;
         String number;
 
         do {
@@ -299,14 +359,14 @@ public class Auto {
             if (!isNumberOk)
                 System.out.println("your number is invalid ");
 
-        }while(!isNumberOk);
+        } while (!isNumberOk);
 
         return Integer.parseInt(number.trim());
     }
 
-    private double getNumber_double(String message,String regex) {
+    private double getNumber_double(String message, String regex) {
         Scanner scanner = new Scanner(System.in);
-        boolean isNumberOk ;
+        boolean isNumberOk;
         String number;
 
         do {
@@ -320,7 +380,7 @@ public class Auto {
             if (!isNumberOk)
                 System.out.println("your number is invalid ");
 
-        }while(!isNumberOk);
+        } while (!isNumberOk);
 
         return Double.parseDouble(number);
     }
@@ -351,7 +411,7 @@ public class Auto {
         System.out.println("enter your birth day");
         int birthDay = scanner.nextInt();
 
-        return new SimpleDateFormat("yyyy-MM-dd").parse(birthYear+"-"+birthMonth+"-"+birthDay);
+        return new SimpleDateFormat("yyyy-MM-dd").parse(birthYear + "-" + birthMonth + "-" + birthDay);
     }
 
     private String getPhoneNumber() {
@@ -360,12 +420,13 @@ public class Auto {
         System.out.println("enter your phone number (09121234567) ");
         String phoneNumber = scanner.next();
 
-        if (!phoneNumber.matches("[0-9]*")){
+        if (!phoneNumber.matches("[0-9]*")) {
             System.out.println("your number is inValid");
             return getPhoneNumber();
-    }
+        }
         return phoneNumber;
     }
+
 
 }
 
